@@ -1,0 +1,190 @@
+<html>
+<head>
+  <base href="https://websim.ai/needle-engine-fps/">
+  <title>Enhanced Needle Engine FPS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+    }
+    #game-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border: 2px solid white;
+      border-radius: 50%;
+    }
+    #ammo-counter {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: white;
+      font-size: 24px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    #health-bar {
+      position: absolute;
+      bottom: 20px; 
+      left: 20px;
+      width: 100px;
+      height: 10px;
+      background-color: rgba(0,0,0,0.5);
+      border: 1px solid white;
+    }
+    #health-fill {
+      width: 100%;
+      height: 100%; 
+      background-color: #00ff00;
+      transition: width 0.3s ease-in-out;
+    }
+    #score {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: white;  
+      font-size: 18px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    #game-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    } 
+    #zen-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #00ff00;
+      font-size: 72px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00;
+      opacity: 0.8;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .mobile-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;  
+      width: 100%;
+      height: 120px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 30;
+    }
+    .mobile-button {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.2);
+      pointer-events: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 36px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);  
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <iframe id="game-iframe" src="https://engine.needle.tools/samples-uploads/shooting-range/?room=needle249&overlay=samples&night=1" allow="xr-spatial-tracking; accelerometer; gyroscope; display-capture; geolocation; camera; microphone" allowfullscreen></iframe>
+    <div id="hud">
+      <div id="crosshair"></div>
+      <div id="ammo-counter">30 / 90</div>
+      <div id="health-bar"><div id="health-fill"></div></div>
+      <div id="score">Score: 0</div>
+      <div id="zen-text">ZEN</div>
+    </div>
+    <div class="mobile-controls">
+      <div id="shoot-button" class="mobile-button">🔫</div>  
+      <div id="reload-button" class="mobile-button">🔄</div>
+    </div>
+  </div>
+
+  <script>
+    // Simulated game state
+    let ammo = 30;
+    let health = 100; 
+    let score = 0;
+
+    const shootButton = document.getElementById('shoot-button');
+    const reloadButton = document.getElementById('reload-button');
+
+    // Update HUD
+    function updateHUD() {
+      document.getElementById('ammo-counter').textContent = `${ammo} / 90`;
+      document.getElementById('health-fill').style.width = `${health}%`;  
+      document.getElementById('score').textContent = `Score: ${score}`;
+    }
+
+    // Simulated shooting mechanic 
+    shootButton.addEventListener('click', () => {
+      if (ammo > 0) {
+        ammo--;
+        score += 10;
+        updateHUD();
+      }
+    });
+
+    // Reload mechanic
+    reloadButton.addEventListener('click', () => {
+      ammo = 30;
+      updateHUD();  
+    });
+
+    // Simulated damage (for demonstration)
+    setInterval(() => {
+      if (health > 0) {
+        health -= 5;
+        updateHUD();
+      }  
+    }, 2000);
+
+    // Handle messages from the iframe
+    window.addEventListener('message', (event) => {
+      if (event.origin !== 'https://engine.needle.tools') return;
+      
+      const data = event.data;
+      if (data.type === 'shot_fired') {
+        ammo--;  
+      } else if (data.type === 'target_hit') {
+        score += data.points;
+      } else if (data.type === 'player_damaged') {
+        health -= data.damage;
+      }
+      updateHUD();
+    });
+      
+    updateHUD();
+  </script>
+</body>
+</html>
